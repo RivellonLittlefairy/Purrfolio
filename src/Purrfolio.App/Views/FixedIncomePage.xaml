@@ -1,11 +1,104 @@
 <Page
     x:Class="Purrfolio.App.Views.FixedIncomePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Padding="24">
-        <StackPanel Spacing="8">
-            <TextBlock FontSize="28" FontWeight="SemiBold" Text="固定收益专项" />
-            <TextBlock Text="预留：超长期特别国债批次录入、派息日历与通知中心推送。" />
-        </StackPanel>
-    </Grid>
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Purrfolio.App.Models"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Loaded="FixedIncomePage_OnLoaded">
+
+    <ScrollViewer>
+        <Grid Padding="24" RowSpacing="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <TextBlock FontSize="30" FontWeight="SemiBold" Text="固定收益收益率看板" />
+                <Button
+                    Command="{x:Bind ViewModel.RefreshCommand}"
+                    Content="刷新"
+                    IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
+            </StackPanel>
+
+            <TextBlock Grid.Row="1" Opacity="0.8" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
+
+            <Border Grid.Row="2" Padding="16" CornerRadius="12" Background="{StaticResource PortfolioCardBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="债券仓总 XIRR" />
+                    <TextBlock FontSize="32" FontWeight="SemiBold" Text="{x:Bind ViewModel.PortfolioXirrText, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="3" Padding="16" CornerRadius="12" Background="{StaticResource PortfolioCardBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="单只债券维度 XIRR" />
+                    <muxc:ItemsRepeater ItemsSource="{x:Bind ViewModel.BondItems, Mode=OneWay}">
+                        <muxc:ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="models:BondXirrSummaryItem">
+                                <Grid Padding="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="240" />
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="100" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{x:Bind BondName}" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Column="1" Text="{x:Bind LotsCount}" />
+                                    <TextBlock Grid.Column="2" Text="{x:Bind CostBasis, StringFormat='¥{0:N2}'}" />
+                                    <TextBlock Grid.Column="3" Text="{x:Bind MarketValue, StringFormat='¥{0:N2}'}" />
+                                    <TextBlock Grid.Column="4" Text="{x:Bind Profit, StringFormat='¥{0:N2}'}" />
+                                    <TextBlock Grid.Column="5" Text="{x:Bind XirrDisplay}" />
+                                </Grid>
+                            </DataTemplate>
+                        </muxc:ItemsRepeater.ItemTemplate>
+                    </muxc:ItemsRepeater>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="4" Padding="16" CornerRadius="12" Background="{StaticResource PortfolioCardBrush}">
+                <StackPanel Spacing="10">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <TextBlock FontSize="18" FontWeight="SemiBold" Text="分批次维度 XIRR" />
+                        <TextBlock Text="筛选债券：" VerticalAlignment="Center" />
+                        <ComboBox
+                            Width="280"
+                            ItemsSource="{x:Bind ViewModel.BondNames, Mode=OneWay}"
+                            SelectedItem="{x:Bind ViewModel.SelectedBondName, Mode=TwoWay}" />
+                    </StackPanel>
+
+                    <muxc:ItemsRepeater ItemsSource="{x:Bind ViewModel.VisibleLots, Mode=OneWay}">
+                        <muxc:ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="models:BondLotXirrItem">
+                                <Grid Padding="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="220" />
+                                        <ColumnDefinition Width="180" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="100" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{x:Bind BondName}" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Column="1" Text="{x:Bind LotLabel}" />
+                                    <TextBlock Grid.Column="2" Text="{x:Bind CostBasis, StringFormat='¥{0:N2}'}" />
+                                    <TextBlock Grid.Column="3" Text="{x:Bind MarketValue, StringFormat='¥{0:N2}'}" />
+                                    <TextBlock Grid.Column="4" Text="{x:Bind CouponRate, StringFormat='{}{0:P2}'}" />
+                                    <TextBlock Grid.Column="5" Text="{x:Bind XirrDisplay}" />
+                                </Grid>
+                            </DataTemplate>
+                        </muxc:ItemsRepeater.ItemTemplate>
+                    </muxc:ItemsRepeater>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
 </Page>

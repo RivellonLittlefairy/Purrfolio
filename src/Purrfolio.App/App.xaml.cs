@@ -52,6 +52,7 @@ public partial class App : Application
 
         services.AddTransient<AssetViewModel>();
         services.AddTransient<ManualEntryViewModel>();
+        services.AddTransient<FixedIncomeViewModel>();
 
         services.AddTransient<IInvestmentRepository, SqliteInvestmentRepository>();
 
