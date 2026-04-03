@@ -15,12 +15,14 @@ public sealed partial class MainWindow : Window
     private readonly ManualEntryPage _manualEntryPage;
     private readonly FixedIncomePage _fixedIncomePage;
     private readonly ProjectionPage _projectionPage;
+    private readonly OcrImportPage _ocrImportPage;
 
     public MainWindow(
         HomePage homePage,
         ManualEntryPage manualEntryPage,
         FixedIncomePage fixedIncomePage,
-        ProjectionPage projectionPage)
+        ProjectionPage projectionPage,
+        OcrImportPage ocrImportPage)
     {
         InitializeComponent();
 
@@ -28,6 +30,7 @@ public sealed partial class MainWindow : Window
         _manualEntryPage = manualEntryPage;
         _fixedIncomePage = fixedIncomePage;
         _projectionPage = projectionPage;
+        _ocrImportPage = ocrImportPage;
 
         TryApplyMicaBackdrop();
 
@@ -54,6 +57,7 @@ public sealed partial class MainWindow : Window
         {
             "fixed-income" => _fixedIncomePage,
             "manual-entry" => _manualEntryPage,
+            "ocr-import" => _ocrImportPage,
             "projection" => _projectionPage,
             _ => _homePage
         };

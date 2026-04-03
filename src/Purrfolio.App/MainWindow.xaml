@@ -32,6 +32,11 @@
                     AccessKey="M"
                     Tag="manual-entry" />
                 <NavigationViewItem
+                    Content="截图识别录入"
+                    Icon="Camera"
+                    AccessKey="O"
+                    Tag="ocr-import" />
+                <NavigationViewItem
                     Content="财富预测"
                     Icon="Calculator"
                     AccessKey="P"

@@ -50,14 +50,18 @@ public partial class App : Application
         services.AddTransient<ManualEntryPage>();
         services.AddTransient<FixedIncomePage>();
         services.AddTransient<ProjectionPage>();
+        services.AddTransient<OcrImportPage>();
 
         services.AddTransient<AssetViewModel>();
         services.AddTransient<ManualEntryViewModel>();
         services.AddTransient<FixedIncomeViewModel>();
         services.AddTransient<ProjectionViewModel>();
+        services.AddTransient<OcrImportViewModel>();
 
         services.AddTransient<IInvestmentRepository, SqliteInvestmentRepository>();
         services.AddSingleton<INotificationService, WindowsNotificationService>();
+        services.AddSingleton<HttpClient>();
+        services.AddTransient<IMinimaxOcrService, MinimaxOcrService>();
 
         return services.BuildServiceProvider();
     }

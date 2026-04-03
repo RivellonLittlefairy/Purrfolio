@@ -20,6 +20,7 @@ WinUI 3 本地化高净值资产追踪与投资看板（永久组合 + 固定收
 - 新增固定收益收益率看板：支持“单只债券维度 XIRR”与“分批次维度 XIRR”独立展示。
 - 新增派息日历：自动生成未来 18 个月派息/到期兑付事件，并支持推送至 Windows 通知中心。
 - 提供手动录入页面，新增记录直接写入本地 SQLite 数据库。
+- 新增截图 OCR 自动录入页面：可调用 MiniMax 识别投资截图，生成可编辑草稿并批量导入 SQLite。
 
 ### 3. 财富目标与复利预测
 
@@ -41,6 +42,7 @@ WinUI 3 本地化高净值资产追踪与投资看板（永久组合 + 固定收
 - 首页采用 `NavigationView`，窗口启用 `MicaBackdrop`，并已实现资产环形图和净值/基准对比曲线。
 - 固定收益页新增 XIRR 看板：支持债仓总览、单只债券维度、分批次维度三层展示。
 - 新增“手动录入”页面，支持普通资产与政府债券（含票息/频率/到期日）写入本地 SQLite，并支持特别国债模板与记录删除。
+- 新增“截图识别录入”页面：支持调用 MiniMax OCR 识别截图并自动生成导入草稿，支持人工复核后批量入库。
 - 新增可交互复利模拟器页面（目标达成推演 + 月度轨迹）。
 - 页面切换新增标题元素的 Connected Animation，过渡更平滑。
 - 补充关键操作的 AccessKey，增强全键盘操作体验（例如 `Alt+H/F/M/P` 页面切换）。
@@ -59,3 +61,17 @@ dotnet test tests/Purrfolio.Core.Tests/Purrfolio.Core.Tests.csproj
 ```bash
 dotnet publish src/Purrfolio.App/Purrfolio.App.csproj -c Release -r win-x64
 ```
+
+## MiniMax OCR 自动录入配置
+
+可通过环境变量预填 OCR 页面参数：
+
+- `MINIMAX_OCR_ENDPOINT`：接口地址（默认 `https://api.minimax.chat/v1/text/chatcompletion_v2`）
+- `MINIMAX_API_KEY`：MiniMax API Key
+- `MINIMAX_MODEL`：模型名称（默认 `MiniMax-Text-01`，可在页面中改）
+
+使用步骤：
+
+1. 打开导航「截图识别录入」页面并选择截图文件。
+2. 检查 Endpoint / API Key / Model 后点击「开始识别」。
+3. 在草稿列表中修正字段并勾选条目，点击「导入选中」写入本地 SQLite。
