@@ -1,14 +1,19 @@
 <Page
     x:Class="Purrfolio.App.Views.ManualEntryPage"
+    x:Name="RootPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    xmlns:models="using:Purrfolio.App.Models"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Loaded="ManualEntryPage_OnLoaded">
 
     <ScrollViewer>
         <Grid Padding="24" RowSpacing="16">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -29,6 +34,13 @@
 
             <Border Grid.Row="2" Padding="16" CornerRadius="12" Background="{StaticResource PortfolioCardBrush}">
                 <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button
+                            Command="{x:Bind ViewModel.ApplySpecialBondTemplateCommand}"
+                            Content="套用特别国债模板"
+                            MinWidth="170" />
+                    </StackPanel>
+
                     <Grid ColumnSpacing="12" RowSpacing="12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="220" />
@@ -121,6 +133,42 @@
                             IsEnabled="{x:Bind ViewModel.IsSaving, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
                         <ProgressRing Width="24" Height="24" IsActive="{x:Bind ViewModel.IsSaving, Mode=OneWay}" />
                     </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="3" Padding="16" CornerRadius="12" Background="{StaticResource PortfolioCardBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="投资记录管理（最近 120 条）" />
+
+                    <muxc:ItemsRepeater ItemsSource="{x:Bind ViewModel.RecentRecords, Mode=OneWay}">
+                        <muxc:ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="models:InvestmentRecordListItem">
+                                <Grid Padding="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="200" />
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="90" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="{x:Bind Id}" />
+                                    <TextBlock Grid.Column="1" Text="{x:Bind AssetClassLabel}" />
+                                    <TextBlock Grid.Column="2" Text="{x:Bind Name}" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Column="3" Text="{x:Bind TradeDate, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                                    <TextBlock Grid.Column="4" Text="{x:Bind Quantity, StringFormat='{}{0:N2}'}" />
+                                    <TextBlock Grid.Column="5" Text="{x:Bind MarketValue, StringFormat='¥{0:N2}'}" />
+                                    <Button
+                                        Grid.Column="6"
+                                        Content="删除"
+                                        Command="{x:Bind ViewModel.DeleteRecordCommand, ElementName=RootPage}"
+                                        CommandParameter="{x:Bind Id}" />
+                                </Grid>
+                            </DataTemplate>
+                        </muxc:ItemsRepeater.ItemTemplate>
+                    </muxc:ItemsRepeater>
                 </StackPanel>
             </Border>
         </Grid>

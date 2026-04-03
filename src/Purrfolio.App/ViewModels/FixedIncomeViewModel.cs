@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Purrfolio.App.Models;
+using Purrfolio.App.Services;
 using Purrfolio.Core.Enums;
 using Purrfolio.Core.Models;
 using Purrfolio.Core.Services;
@@ -9,7 +10,9 @@ using Purrfolio.Core.Utilities;
 
 namespace Purrfolio.App.ViewModels;
 
-public partial class FixedIncomeViewModel(IInvestmentRepository investmentRepository) : ObservableObject
+public partial class FixedIncomeViewModel(
+    IInvestmentRepository investmentRepository,
+    INotificationService notificationService) : ObservableObject
 {
     private readonly List<BondLotXirrItem> _allLots = [];
 
@@ -18,6 +21,7 @@ public partial class FixedIncomeViewModel(IInvestmentRepository investmentReposi
     public ObservableCollection<BondLotXirrItem> VisibleLots { get; } = [];
 
     public ObservableCollection<string> BondNames { get; } = [];
+    public ObservableCollection<CouponReminderItem> UpcomingCoupons { get; } = [];
 
     [ObservableProperty]
     private bool isLoading;
@@ -31,6 +35,9 @@ public partial class FixedIncomeViewModel(IInvestmentRepository investmentReposi
     [ObservableProperty]
     private string selectedBondName = "全部";
 
+    [ObservableProperty]
+    private string couponCalendarHintText = "暂无派息提醒。";
+
     partial void OnSelectedBondNameChanged(string value)
     {
         ApplyLotFilter();
@@ -38,6 +45,24 @@ public partial class FixedIncomeViewModel(IInvestmentRepository investmentReposi
 
     [RelayCommand]
     private Task RefreshAsync() => LoadAsync();
+
+    [RelayCommand]
+    private async Task PushCouponRemindersAsync()
+    {
+        var targetItems = UpcomingCoupons.Take(3).ToArray();
+        if (targetItems.Length == 0)
+        {
+            await notificationService.NotifyAsync("Purrfolio 派息提醒", "未来 12 个月暂无派息事件。");
+            return;
+        }
+
+        foreach (var item in targetItems)
+        {
+            await notificationService.NotifyAsync(
+                "Purrfolio 派息提醒",
+                $"{item.BondName} - {item.PayoutDate:yyyy-MM-dd} - {item.EventType} ¥{item.Amount:N2}");
+        }
+    }
 
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
@@ -53,6 +78,7 @@ public partial class FixedIncomeViewModel(IInvestmentRepository investmentReposi
             BondItems.Clear();
             VisibleLots.Clear();
             BondNames.Clear();
+            UpcomingCoupons.Clear();
             _allLots.Clear();
 
             var records = new List<InvestmentRecord>();
@@ -68,6 +94,7 @@ public partial class FixedIncomeViewModel(IInvestmentRepository investmentReposi
             {
                 PortfolioXirrText = "N/A";
                 StatusText = "暂无债券记录，请在“手动录入”页新增政府债券记录。";
+                CouponCalendarHintText = "未来 18 个月暂无派息或到期事件。";
                 return;
             }
 
@@ -128,12 +155,34 @@ public partial class FixedIncomeViewModel(IInvestmentRepository investmentReposi
             SelectedBondName = BondNames[0];
             PortfolioXirrText = TryFormatXirr(portfolioFlows);
             StatusText = $"已载入 {records.Count} 笔债券记录，覆盖 {BondItems.Count} 只债券。";
+            BuildCouponCalendar(records, today);
             ApplyLotFilter();
         }
         finally
         {
             IsLoading = false;
         }
+    }
+
+    private void BuildCouponCalendar(IReadOnlyCollection<InvestmentRecord> records, DateOnly today)
+    {
+        UpcomingCoupons.Clear();
+
+        var events = CouponCalendarGenerator.GenerateUpcomingEvents(records, today, monthsAhead: 18);
+        foreach (var evt in events.Take(18))
+        {
+            var daysLeft = evt.PayoutDate.DayNumber - today.DayNumber;
+            UpcomingCoupons.Add(new CouponReminderItem(
+                BondName: evt.BondName,
+                PayoutDate: evt.PayoutDate,
+                DaysLeft: daysLeft,
+                Amount: evt.CouponAmount,
+                EventType: evt.IsMaturityEvent ? "到期兑付" : "派息"));
+        }
+
+        CouponCalendarHintText = UpcomingCoupons.Count == 0
+            ? "未来 18 个月暂无派息或到期事件。"
+            : $"已生成未来 {UpcomingCoupons.Count} 条派息/兑付提醒。";
     }
 
     private void ApplyLotFilter()

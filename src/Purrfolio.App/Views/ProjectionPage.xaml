@@ -1,11 +1,100 @@
 <Page
     x:Class="Purrfolio.App.Views.ProjectionPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Padding="24">
-        <StackPanel Spacing="8">
-            <TextBlock FontSize="28" FontWeight="SemiBold" Text="复利预测与里程碑" />
-            <TextBlock Text="预留：目标切换、指数对比、关键年龄倒计时扩展。" />
-        </StackPanel>
-    </Grid>
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Purrfolio.App.Models"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    Loaded="ProjectionPage_OnLoaded">
+
+    <ScrollViewer>
+        <Grid Padding="24" RowSpacing="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Spacing="6">
+                <TextBlock FontSize="30" FontWeight="SemiBold" Text="复利模拟器" />
+                <TextBlock Opacity="0.8" Text="根据当前净值、月投入和年化收益率预测达标时间。" />
+            </StackPanel>
+
+            <InfoBar
+                Grid.Row="1"
+                IsOpen="{x:Bind ViewModel.IsStatusOpen, Mode=TwoWay}"
+                IsClosable="True"
+                Severity="Warning"
+                Title="输入校验"
+                Message="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+
+            <Border Grid.Row="2" Padding="16" CornerRadius="12" Background="{StaticResource PortfolioCardBrush}">
+                <StackPanel Spacing="12">
+                    <Grid ColumnSpacing="12" RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="220" />
+                            <ColumnDefinition Width="220" />
+                            <ColumnDefinition Width="220" />
+                            <ColumnDefinition Width="220" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Spacing="6">
+                            <TextBlock Text="当前净值" />
+                            <TextBox Text="{x:Bind ViewModel.CurrentBalanceText, Mode=TwoWay}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Spacing="6">
+                            <TextBlock Text="目标金额" />
+                            <TextBox Text="{x:Bind ViewModel.TargetBalanceText, Mode=TwoWay}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2" Spacing="6">
+                            <TextBlock Text="月投入" />
+                            <TextBox Text="{x:Bind ViewModel.MonthlyContributionText, Mode=TwoWay}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3" Spacing="6">
+                            <TextBlock Text="年化收益率（0~1）" />
+                            <TextBox Text="{x:Bind ViewModel.AnnualizedReturnRateText, Mode=TwoWay}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <TextBlock Text="模拟起点" VerticalAlignment="Center" />
+                        <DatePicker Date="{x:Bind ViewModel.StartDate, Mode=TwoWay}" />
+                        <Button Content="开始模拟" Command="{x:Bind ViewModel.SimulateCommand}" />
+                    </StackPanel>
+
+                    <ProgressBar Height="14" Maximum="100" Value="{x:Bind ViewModel.ProgressPercentage, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind ViewModel.ProgressText, Mode=OneWay}" />
+                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="{x:Bind ViewModel.SimulateResultText, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="3" Padding="16" CornerRadius="12" Background="{StaticResource PortfolioCardBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="月度复利轨迹" />
+                    <muxc:ItemsRepeater ItemsSource="{x:Bind ViewModel.ProjectionPoints, Mode=OneWay}">
+                        <muxc:ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="models:ProjectionPoint">
+                                <Grid Padding="0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="140" />
+                                        <ColumnDefinition Width="180" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{x:Bind MonthIndex, StringFormat='第 {0} 月'}" />
+                                    <TextBlock Grid.Column="1" Text="{x:Bind Date, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                                    <TextBlock Grid.Column="2" Text="{x:Bind Balance, StringFormat='¥{0:N2}'}" FontWeight="SemiBold" />
+                                </Grid>
+                            </DataTemplate>
+                        </muxc:ItemsRepeater.ItemTemplate>
+                    </muxc:ItemsRepeater>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
 </Page>

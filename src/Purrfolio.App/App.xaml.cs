@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Purrfolio.App.Services;
 using Purrfolio.App.ViewModels;
 using Purrfolio.App.Views;
 using Purrfolio.Core.Services;
@@ -53,8 +54,10 @@ public partial class App : Application
         services.AddTransient<AssetViewModel>();
         services.AddTransient<ManualEntryViewModel>();
         services.AddTransient<FixedIncomeViewModel>();
+        services.AddTransient<ProjectionViewModel>();
 
         services.AddTransient<IInvestmentRepository, SqliteInvestmentRepository>();
+        services.AddSingleton<INotificationService, WindowsNotificationService>();
 
         return services.BuildServiceProvider();
     }

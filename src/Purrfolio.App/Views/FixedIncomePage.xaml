@@ -10,14 +10,15 @@
     Loaded="FixedIncomePage_OnLoaded">
 
     <ScrollViewer>
-        <Grid Padding="24" RowSpacing="16">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+            <Grid Padding="24" RowSpacing="16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                 <TextBlock FontSize="30" FontWeight="SemiBold" Text="固定收益收益率看板" />
@@ -93,6 +94,39 @@
                                     <TextBlock Grid.Column="3" Text="{x:Bind MarketValue, StringFormat='¥{0:N2}'}" />
                                     <TextBlock Grid.Column="4" Text="{x:Bind CouponRate, StringFormat='{}{0:P2}'}" />
                                     <TextBlock Grid.Column="5" Text="{x:Bind XirrDisplay}" />
+                                </Grid>
+                            </DataTemplate>
+                        </muxc:ItemsRepeater.ItemTemplate>
+                    </muxc:ItemsRepeater>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="5" Padding="16" CornerRadius="12" Background="{StaticResource PortfolioCardBrush}">
+                <StackPanel Spacing="10">
+                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <TextBlock FontSize="18" FontWeight="SemiBold" Text="派息日历（未来 18 个月）" />
+                        <Button
+                            Content="推送近期提醒到通知中心"
+                            Command="{x:Bind ViewModel.PushCouponRemindersCommand}" />
+                    </StackPanel>
+                    <TextBlock Opacity="0.8" Text="{x:Bind ViewModel.CouponCalendarHintText, Mode=OneWay}" />
+
+                    <muxc:ItemsRepeater ItemsSource="{x:Bind ViewModel.UpcomingCoupons, Mode=OneWay}">
+                        <muxc:ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="models:CouponReminderItem">
+                                <Grid Padding="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="220" />
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="120" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{x:Bind BondName}" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Column="1" Text="{x:Bind PayoutDate, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                                    <TextBlock Grid.Column="2" Text="{x:Bind DaysLeft, StringFormat='{}{0} 天后'}" />
+                                    <TextBlock Grid.Column="3" Text="{x:Bind EventType}" />
+                                    <TextBlock Grid.Column="4" Text="{x:Bind Amount, StringFormat='¥{0:N2}'}" />
                                 </Grid>
                             </DataTemplate>
                         </muxc:ItemsRepeater.ItemTemplate>

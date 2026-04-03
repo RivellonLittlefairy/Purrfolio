@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -30,6 +31,8 @@ public partial class ManualEntryViewModel(IInvestmentRepository investmentReposi
     public IReadOnlyList<EnumOption<AssetClass>> AssetClassOptions => AssetClassOptionSource;
 
     public IReadOnlyList<EnumOption<CouponFrequency>> CouponFrequencyOptions => CouponFrequencyOptionSource;
+
+    public ObservableCollection<InvestmentRecordListItem> RecentRecords { get; } = [];
 
     [ObservableProperty]
     private EnumOption<AssetClass>? selectedAssetClass = AssetClassOptionSource[0];
@@ -113,6 +116,7 @@ public partial class ManualEntryViewModel(IInvestmentRepository investmentReposi
             PublishStatus("保存成功", "投资记录已写入本地 SQLite。", InfoBarSeverity.Success);
 
             ResetAfterSave(record.AssetClass);
+            await LoadRecordsAsync();
         }
         catch (Exception ex)
         {
@@ -121,6 +125,59 @@ public partial class ManualEntryViewModel(IInvestmentRepository investmentReposi
         finally
         {
             IsSaving = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteRecordAsync(int id)
+    {
+        var deleted = await investmentRepository.DeleteInvestmentAsync(id);
+        if (!deleted)
+        {
+            PublishStatus("删除失败", "记录不存在或已被删除。", InfoBarSeverity.Warning);
+            return;
+        }
+
+        PublishStatus("删除成功", $"已删除记录 #{id}。", InfoBarSeverity.Success);
+        await LoadRecordsAsync();
+    }
+
+    [RelayCommand]
+    private void ApplySpecialBondTemplate()
+    {
+        SelectedAssetClass = AssetClassOptionSource.Single(x => x.Value == AssetClass.GovernmentBonds);
+        SelectedCouponFrequency = CouponFrequencyOptionSource.Single(x => x.Value == CouponFrequency.SemiAnnual);
+
+        AssetName = "30年特别国债";
+        QuantityText = "100";
+        UnitPriceText = "100";
+        FeesText = "0";
+        AccruedInterestText = "0";
+        CouponRateText = "0.0285";
+        MaturityDate = DateTimeOffset.Now.AddYears(30);
+        IsSpecialGovernmentBond = true;
+
+        PublishStatus("模板已套用", "已填充超长期特别国债常用字段。", InfoBarSeverity.Informational);
+    }
+
+    public async Task LoadRecordsAsync(CancellationToken cancellationToken = default)
+    {
+        RecentRecords.Clear();
+
+        var records = await investmentRepository.GetAllInvestmentsAsync(cancellationToken);
+        foreach (var r in records.Take(120))
+        {
+            var marketValue = r.Quantity * r.UnitPrice + r.AccruedInterest - r.Fees;
+
+            RecentRecords.Add(new InvestmentRecordListItem(
+                Id: r.Id,
+                AssetClassLabel: ToAssetClassLabel(r.AssetClass),
+                Name: r.Name,
+                TradeDate: r.TradeDate,
+                Quantity: r.Quantity,
+                UnitPrice: r.UnitPrice,
+                Fees: r.Fees,
+                MarketValue: marketValue));
         }
     }
 
@@ -231,5 +288,17 @@ public partial class ManualEntryViewModel(IInvestmentRepository investmentReposi
 
         value = 0;
         return false;
+    }
+
+    private static string ToAssetClassLabel(AssetClass assetClass)
+    {
+        return assetClass switch
+        {
+            AssetClass.Stocks => "股票",
+            AssetClass.Gold => "黄金",
+            AssetClass.GovernmentBonds => "政府债券",
+            AssetClass.Cash => "现金",
+            _ => assetClass.ToString()
+        };
     }
 }
