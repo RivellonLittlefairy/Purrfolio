@@ -25,6 +25,10 @@
                     Icon="Library"
                     Tag="fixed-income" />
                 <NavigationViewItem
+                    Content="手动录入"
+                    Icon="Edit"
+                    Tag="manual-entry" />
+                <NavigationViewItem
                     Content="财富预测"
                     Icon="Calculator"
                     Tag="projection" />

@@ -6,6 +6,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <SolidColorBrush x:Key="PortfolioPositiveBrush" Color="#FF2E7D32" />
             <SolidColorBrush x:Key="PortfolioWarningBrush" Color="#FFD84315" />
             <SolidColorBrush x:Key="PortfolioCardBrush" Color="#19FFFFFF" />

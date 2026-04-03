@@ -14,6 +14,7 @@ WinUI 3 本地化高净值资产追踪与投资看板（永久组合 + 固定收
 - `AssetViewModel` 通过 `IAsyncEnumerable` 异步读取 SQLite 投资记录。
 - 通用 `XirrCalculator` 支持非定期现金流收益率计算（牛顿法 + 二分兜底）。
 - 首页采用 `NavigationView`，窗口启用 `MicaBackdrop`，资产列表使用 `ItemsRepeater`。
+- 新增“手动录入”页面，支持普通资产与政府债券（含票息/频率/到期日）写入本地 SQLite。
 - 财务计算逻辑提供 xUnit 测试覆盖（XIRR、复利达标预测、配比偏离预警）。
 
 ## 本地运行（Windows）

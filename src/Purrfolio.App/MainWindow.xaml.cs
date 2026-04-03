@@ -8,14 +8,20 @@ namespace Purrfolio.App;
 public sealed partial class MainWindow : Window
 {
     private readonly HomePage _homePage;
+    private readonly ManualEntryPage _manualEntryPage;
     private readonly FixedIncomePage _fixedIncomePage;
     private readonly ProjectionPage _projectionPage;
 
-    public MainWindow(HomePage homePage, FixedIncomePage fixedIncomePage, ProjectionPage projectionPage)
+    public MainWindow(
+        HomePage homePage,
+        ManualEntryPage manualEntryPage,
+        FixedIncomePage fixedIncomePage,
+        ProjectionPage projectionPage)
     {
         InitializeComponent();
 
         _homePage = homePage;
+        _manualEntryPage = manualEntryPage;
         _fixedIncomePage = fixedIncomePage;
         _projectionPage = projectionPage;
 
@@ -43,6 +49,7 @@ public sealed partial class MainWindow : Window
         RootFrame.Content = tag switch
         {
             "fixed-income" => _fixedIncomePage,
+            "manual-entry" => _manualEntryPage,
             "projection" => _projectionPage,
             _ => _homePage
         };

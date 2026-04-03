@@ -46,10 +46,12 @@ public partial class App : Application
 
         services.AddSingleton<MainWindow>();
         services.AddTransient<HomePage>();
+        services.AddTransient<ManualEntryPage>();
         services.AddTransient<FixedIncomePage>();
         services.AddTransient<ProjectionPage>();
 
         services.AddTransient<AssetViewModel>();
+        services.AddTransient<ManualEntryViewModel>();
 
         services.AddTransient<IInvestmentRepository, SqliteInvestmentRepository>();
 
