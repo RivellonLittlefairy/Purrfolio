@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:canvas="using:Microsoft.Graphics.Canvas.UI.Xaml"
     xmlns:models="using:Purrfolio.App.Models"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
@@ -21,9 +22,10 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                <TextBlock FontSize="30" FontWeight="SemiBold" Text="高净值资产总览" />
+                <TextBlock x:Name="PageTitleText" FontSize="30" FontWeight="SemiBold" Text="高净值资产总览" />
                 <Button
                     Command="{x:Bind ViewModel.RefreshCommand}"
+                    AccessKey="R"
                     Content="刷新"
                     IsEnabled="{x:Bind ViewModel.IsLoading, Converter={StaticResource InverseBooleanConverter}, Mode=OneWay}" />
             </StackPanel>
@@ -50,12 +52,13 @@
 
                     <StackPanel Grid.Column="0" Spacing="10">
                         <TextBlock FontSize="18" FontWeight="SemiBold" Text="资产环形图" />
-                        <Canvas
+                        <canvas:CanvasControl
                             x:Name="DonutCanvas"
                             Width="280"
                             Height="220"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
+                            Draw="DonutCanvas_OnDraw"
                             SizeChanged="ChartCanvas_OnSizeChanged" />
                     </StackPanel>
 
@@ -89,10 +92,11 @@
                         <TextBlock Foreground="#FFE67E22" Text="● 沪深300（归一化）" />
                         <TextBlock Foreground="#FF4CAF50" Text="● CPI（归一化）" />
                     </StackPanel>
-                    <Canvas
+                    <canvas:CanvasControl
                         x:Name="TrendCanvas"
                         Height="260"
                         HorizontalAlignment="Stretch"
+                        Draw="TrendCanvas_OnDraw"
                         SizeChanged="ChartCanvas_OnSizeChanged" />
                     <TextBlock Opacity="0.75" Text="{x:Bind ViewModel.BenchmarkHintText, Mode=OneWay}" />
                 </StackPanel>

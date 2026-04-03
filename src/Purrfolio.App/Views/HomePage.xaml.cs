@@ -1,20 +1,27 @@
 using System.Collections.Specialized;
-using Microsoft.UI;
+using System.Numerics;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Text;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
+using Purrfolio.App.Interfaces;
 using Purrfolio.App.ViewModels;
-using Windows.Foundation;
+using Windows.UI;
 
 namespace Purrfolio.App.Views;
 
-public sealed partial class HomePage : Page
+public sealed partial class HomePage : Page, IConnectedAnimationPage
 {
-    private const double FullCircle = 359.999;
+    private static readonly CanvasTextFormat AxisTextFormat = new()
+    {
+        FontSize = 11
+    };
+
     private bool _isInitialized;
 
     public AssetViewModel ViewModel { get; }
+    public UIElement AnimationTarget => PageTitleText;
 
     public HomePage(AssetViewModel viewModel)
     {
@@ -34,97 +41,96 @@ public sealed partial class HomePage : Page
 
         _isInitialized = true;
         await ViewModel.LoadAsync();
-        RedrawCharts();
+        InvalidateCharts();
     }
 
     private void ChartCanvas_OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
-        RedrawCharts();
+        InvalidateCharts();
     }
 
     private void OnChartDataChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        RedrawCharts();
+        InvalidateCharts();
     }
 
-    private void RedrawCharts()
+    private void InvalidateCharts()
     {
-        DrawDonutChart();
-        DrawTrendChart();
+        DonutCanvas.Invalidate();
+        TrendCanvas.Invalidate();
     }
 
-    private void DrawDonutChart()
+    private void DonutCanvas_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
     {
-        DonutCanvas.Children.Clear();
+        var drawingSession = args.DrawingSession;
+        drawingSession.Clear(Color.FromArgb(0, 0, 0, 0));
 
         var slices = ViewModel.DonutSlices.Where(x => x.Weight > 0).ToArray();
-        if (slices.Length == 0 || DonutCanvas.ActualWidth < 40 || DonutCanvas.ActualHeight < 40)
+        if (slices.Length == 0 || sender.ActualWidth < 40 || sender.ActualHeight < 40)
         {
             return;
         }
 
-        var width = DonutCanvas.ActualWidth;
-        var height = DonutCanvas.ActualHeight;
+        var width = (float)sender.ActualWidth;
+        var height = (float)sender.ActualHeight;
 
-        var size = Math.Min(width, height) - 6;
-        var outerRadius = size / 2;
-        var innerRadius = outerRadius * 0.58;
-        var center = new Point(width / 2, height / 2);
+        var size = MathF.Min(width, height) - 8f;
+        var outerRadius = size / 2f;
+        var innerRadius = outerRadius * 0.58f;
+        var strokeWidth = outerRadius - innerRadius;
+        var drawRadius = innerRadius + strokeWidth / 2f;
 
-        var startAngle = -90d;
+        var center = new Vector2(width / 2f, height / 2f);
+        var startAngle = -MathF.PI / 2f;
 
         foreach (var slice in slices)
         {
-            var sweepAngle = (double)(slice.Weight * 360m);
-            if (sweepAngle <= 0)
+            var sweep = Math.Max(0f, (float)(slice.Weight * (decimal)(2 * Math.PI)));
+            if (sweep <= 0f)
             {
                 continue;
             }
 
-            if (sweepAngle >= 360)
+            if (sweep >= 2 * MathF.PI)
             {
-                sweepAngle = FullCircle;
+                drawingSession.DrawCircle(center, drawRadius, ParseColor(slice.ColorHex), strokeWidth);
+            }
+            else
+            {
+                drawingSession.DrawArc(
+                    center,
+                    drawRadius,
+                    drawRadius,
+                    startAngle,
+                    sweep,
+                    ParseColor(slice.ColorHex),
+                    strokeWidth);
             }
 
-            var path = new Path
-            {
-                Fill = new SolidColorBrush(ParseColor(slice.ColorHex)),
-                Data = CreateDonutSegment(center, outerRadius, innerRadius, startAngle, sweepAngle)
-            };
-
-            DonutCanvas.Children.Add(path);
-            startAngle += sweepAngle;
+            startAngle += sweep;
         }
 
-        var centerLabel = new TextBlock
-        {
-            Text = "资产配比",
-            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-            Opacity = 0.85
-        };
-
-        DonutCanvas.Children.Add(centerLabel);
-        Canvas.SetLeft(centerLabel, center.X - 28);
-        Canvas.SetTop(centerLabel, center.Y - 10);
+        drawingSession.DrawText("资产配比", new Vector2(center.X - 28f, center.Y - 8f), Color.FromArgb(220, 255, 255, 255));
     }
 
-    private void DrawTrendChart()
+    private void TrendCanvas_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
     {
-        TrendCanvas.Children.Clear();
+        var drawingSession = args.DrawingSession;
+        drawingSession.Clear(Color.FromArgb(0, 0, 0, 0));
 
         var points = ViewModel.NetWorthPoints;
-        if (points.Count < 2 || TrendCanvas.ActualWidth < 120 || TrendCanvas.ActualHeight < 120)
+        if (points.Count < 2 || sender.ActualWidth < 120 || sender.ActualHeight < 120)
         {
             return;
         }
 
-        var width = TrendCanvas.ActualWidth;
-        var height = TrendCanvas.ActualHeight;
+        var width = (float)sender.ActualWidth;
+        var height = (float)sender.ActualHeight;
 
-        const double marginLeft = 60;
-        const double marginRight = 20;
-        const double marginTop = 20;
-        const double marginBottom = 35;
+        const float marginLeft = 60f;
+        const float marginRight = 20f;
+        const float marginTop = 20f;
+        const float marginBottom = 35f;
 
         var plotWidth = width - marginLeft - marginRight;
         var plotHeight = height - marginTop - marginBottom;
@@ -143,125 +149,106 @@ public sealed partial class HomePage : Page
 
         for (var i = 0; i <= 4; i++)
         {
-            var ratio = i / 4d;
+            var ratio = i / 4f;
             var y = marginTop + ratio * plotHeight;
             var value = maxY - (decimal)ratio * (maxY - minY);
 
-            TrendCanvas.Children.Add(new Line
-            {
-                X1 = marginLeft,
-                Y1 = y,
-                X2 = marginLeft + plotWidth,
-                Y2 = y,
-                Stroke = new SolidColorBrush(Color.FromArgb(70, 255, 255, 255)),
-                StrokeThickness = 1
-            });
+            drawingSession.DrawLine(
+                new Vector2(marginLeft, y),
+                new Vector2(marginLeft + plotWidth, y),
+                Color.FromArgb(70, 255, 255, 255),
+                1f);
 
-            var label = new TextBlock
-            {
-                Text = $"¥{value:N0}",
-                FontSize = 11,
-                Opacity = 0.8
-            };
-            TrendCanvas.Children.Add(label);
-            Canvas.SetLeft(label, 4);
-            Canvas.SetTop(label, y - 9);
+            drawingSession.DrawText($"¥{value:N0}", new Vector2(4f, y - 8f), Color.FromArgb(215, 255, 255, 255), AxisTextFormat);
         }
 
-        DrawSeries(points.Select(p => p.NetWorth).ToArray(), Color.FromArgb(255, 74, 144, 226), null);
-        DrawSeries(points.Select(p => p.Csi300Benchmark).ToArray(), Color.FromArgb(255, 230, 126, 34), new DoubleCollection { 5, 4 });
-        DrawSeries(points.Select(p => p.CpiBenchmark).ToArray(), Color.FromArgb(255, 76, 175, 80), new DoubleCollection { 3, 3 });
+        DrawSeries(
+            drawingSession,
+            points.Select(p => p.NetWorth).ToArray(),
+            minY,
+            maxY,
+            marginLeft,
+            marginTop,
+            plotWidth,
+            plotHeight,
+            Color.FromArgb(255, 74, 144, 226));
 
-        var startLabel = new TextBlock
-        {
-            Text = points[0].Date.ToString("yyyy-MM"),
-            FontSize = 11,
-            Opacity = 0.8
-        };
-        TrendCanvas.Children.Add(startLabel);
-        Canvas.SetLeft(startLabel, marginLeft);
-        Canvas.SetTop(startLabel, marginTop + plotHeight + 6);
+        DrawSeries(
+            drawingSession,
+            points.Select(p => p.Csi300Benchmark).ToArray(),
+            minY,
+            maxY,
+            marginLeft,
+            marginTop,
+            plotWidth,
+            plotHeight,
+            Color.FromArgb(255, 230, 126, 34),
+            new float[] { 5f, 4f });
 
-        var endLabel = new TextBlock
-        {
-            Text = points[^1].Date.ToString("yyyy-MM"),
-            FontSize = 11,
-            Opacity = 0.8
-        };
-        TrendCanvas.Children.Add(endLabel);
-        Canvas.SetLeft(endLabel, marginLeft + plotWidth - 58);
-        Canvas.SetTop(endLabel, marginTop + plotHeight + 6);
+        DrawSeries(
+            drawingSession,
+            points.Select(p => p.CpiBenchmark).ToArray(),
+            minY,
+            maxY,
+            marginLeft,
+            marginTop,
+            plotWidth,
+            plotHeight,
+            Color.FromArgb(255, 76, 175, 80),
+            new float[] { 3f, 3f });
 
-        void DrawSeries(decimal[] values, Color color, DoubleCollection? dashArray)
+        drawingSession.DrawText(points[0].Date.ToString("yyyy-MM"), new Vector2(marginLeft, marginTop + plotHeight + 6), Color.FromArgb(215, 255, 255, 255), AxisTextFormat);
+        drawingSession.DrawText(points[^1].Date.ToString("yyyy-MM"), new Vector2(marginLeft + plotWidth - 58, marginTop + plotHeight + 6), Color.FromArgb(215, 255, 255, 255), AxisTextFormat);
+    }
+
+    private static void DrawSeries(
+        CanvasDrawingSession drawingSession,
+        IReadOnlyList<decimal> values,
+        decimal minY,
+        decimal maxY,
+        float marginLeft,
+        float marginTop,
+        float plotWidth,
+        float plotHeight,
+        Color color,
+        float[]? dashPattern = null)
+    {
+        if (values.Count < 2)
         {
-            var polyline = new Polyline
+            return;
+        }
+
+        var strokeStyle = dashPattern is null
+            ? null
+            : new CanvasStrokeStyle
             {
-                Stroke = new SolidColorBrush(color),
-                StrokeThickness = 2,
-                StrokeLineJoin = PenLineJoin.Round,
-                StrokeStartLineCap = PenLineCap.Round,
-                StrokeEndLineCap = PenLineCap.Round
+                DashStyle = CanvasDashStyle.Custom,
+                CustomDashStyle = dashPattern
             };
 
-            if (dashArray is not null)
+        var xStep = plotWidth / (values.Count - 1);
+
+        for (var i = 1; i < values.Count; i++)
+        {
+            var previousRatio = (float)((values[i - 1] - minY) / (maxY - minY));
+            var currentRatio = (float)((values[i] - minY) / (maxY - minY));
+
+            var p1 = new Vector2(
+                marginLeft + (i - 1) * xStep,
+                marginTop + (1f - previousRatio) * plotHeight);
+            var p2 = new Vector2(
+                marginLeft + i * xStep,
+                marginTop + (1f - currentRatio) * plotHeight);
+
+            if (strokeStyle is null)
             {
-                polyline.StrokeDashArray = dashArray;
+                drawingSession.DrawLine(p1, p2, color, 2f);
             }
-
-            var xStep = values.Length > 1 ? plotWidth / (values.Length - 1) : plotWidth;
-
-            for (var i = 0; i < values.Length; i++)
+            else
             {
-                var ratio = (double)((values[i] - minY) / (maxY - minY));
-                var x = marginLeft + i * xStep;
-                var y = marginTop + (1 - ratio) * plotHeight;
-                polyline.Points.Add(new Point(x, y));
+                drawingSession.DrawLine(p1, p2, color, 2f, strokeStyle);
             }
-
-            TrendCanvas.Children.Add(polyline);
         }
-    }
-
-    private static Geometry CreateDonutSegment(Point center, double outerRadius, double innerRadius, double startAngle, double sweepAngle)
-    {
-        var endAngle = startAngle + sweepAngle;
-
-        var outerStart = PolarToCartesian(center, outerRadius, startAngle);
-        var outerEnd = PolarToCartesian(center, outerRadius, endAngle);
-        var innerEnd = PolarToCartesian(center, innerRadius, endAngle);
-        var innerStart = PolarToCartesian(center, innerRadius, startAngle);
-
-        var figure = new PathFigure { StartPoint = outerStart, IsClosed = true };
-
-        figure.Segments.Add(new ArcSegment
-        {
-            Point = outerEnd,
-            Size = new Size(outerRadius, outerRadius),
-            SweepDirection = SweepDirection.Clockwise,
-            IsLargeArc = sweepAngle > 180
-        });
-
-        figure.Segments.Add(new LineSegment { Point = innerEnd });
-
-        figure.Segments.Add(new ArcSegment
-        {
-            Point = innerStart,
-            Size = new Size(innerRadius, innerRadius),
-            SweepDirection = SweepDirection.Counterclockwise,
-            IsLargeArc = sweepAngle > 180
-        });
-
-        var geometry = new PathGeometry();
-        geometry.Figures.Add(figure);
-        return geometry;
-    }
-
-    private static Point PolarToCartesian(Point center, double radius, double angleInDegrees)
-    {
-        var angle = Math.PI * angleInDegrees / 180.0;
-        return new Point(
-            center.X + radius * Math.Cos(angle),
-            center.Y + radius * Math.Sin(angle));
     }
 
     private static Color ParseColor(string colorHex)

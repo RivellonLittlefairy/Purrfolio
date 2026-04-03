@@ -19,7 +19,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Spacing="6">
-                <TextBlock FontSize="30" FontWeight="SemiBold" Text="复利模拟器" />
+                <TextBlock x:Name="PageTitleText" FontSize="30" FontWeight="SemiBold" Text="复利模拟器" />
                 <TextBlock Opacity="0.8" Text="根据当前净值、月投入和年化收益率预测达标时间。" />
             </StackPanel>
 
@@ -65,7 +65,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                         <TextBlock Text="模拟起点" VerticalAlignment="Center" />
                         <DatePicker Date="{x:Bind ViewModel.StartDate, Mode=TwoWay}" />
-                        <Button Content="开始模拟" Command="{x:Bind ViewModel.SimulateCommand}" />
+                        <Button AccessKey="S" Content="开始模拟" Command="{x:Bind ViewModel.SimulateCommand}" />
                     </StackPanel>
 
                     <ProgressBar Height="14" Maximum="100" Value="{x:Bind ViewModel.ProgressPercentage, Mode=OneWay}" />

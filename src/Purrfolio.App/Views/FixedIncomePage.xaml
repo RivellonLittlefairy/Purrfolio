@@ -21,9 +21,10 @@
                 </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                <TextBlock FontSize="30" FontWeight="SemiBold" Text="固定收益收益率看板" />
+                <TextBlock x:Name="PageTitleText" FontSize="30" FontWeight="SemiBold" Text="固定收益收益率看板" />
                 <Button
                     Command="{x:Bind ViewModel.RefreshCommand}"
+                    AccessKey="R"
                     Content="刷新"
                     IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
             </StackPanel>
@@ -106,6 +107,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                         <TextBlock FontSize="18" FontWeight="SemiBold" Text="派息日历（未来 18 个月）" />
                         <Button
+                            AccessKey="N"
                             Content="推送近期提醒到通知中心"
                             Command="{x:Bind ViewModel.PushCouponRemindersCommand}" />
                     </StackPanel>

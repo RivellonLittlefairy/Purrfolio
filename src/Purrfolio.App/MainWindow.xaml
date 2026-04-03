@@ -19,18 +19,22 @@
                 <NavigationViewItem
                     Content="资产看板"
                     Icon="Home"
+                    AccessKey="H"
                     Tag="home" />
                 <NavigationViewItem
                     Content="固定收益"
                     Icon="Library"
+                    AccessKey="F"
                     Tag="fixed-income" />
                 <NavigationViewItem
                     Content="手动录入"
                     Icon="Edit"
+                    AccessKey="M"
                     Tag="manual-entry" />
                 <NavigationViewItem
                     Content="财富预测"
                     Icon="Calculator"
+                    AccessKey="P"
                     Tag="projection" />
             </NavigationView.MenuItems>
 

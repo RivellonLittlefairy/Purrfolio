@@ -20,7 +20,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Spacing="6">
-                <TextBlock FontSize="30" FontWeight="SemiBold" Text="手动录入投资记录" />
+                <TextBlock x:Name="PageTitleText" FontSize="30" FontWeight="SemiBold" Text="手动录入投资记录" />
                 <TextBlock Opacity="0.8" Text="数据仅保存在本地 SQLite，不上传云端。" />
             </StackPanel>
 
@@ -37,6 +37,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <Button
                             Command="{x:Bind ViewModel.ApplySpecialBondTemplateCommand}"
+                            AccessKey="T"
                             Content="套用特别国债模板"
                             MinWidth="170" />
                     </StackPanel>
@@ -128,6 +129,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <Button
                             Command="{x:Bind ViewModel.SaveCommand}"
+                            AccessKey="S"
                             Content="保存记录"
                             MinWidth="120"
                             IsEnabled="{x:Bind ViewModel.IsSaving, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" />
