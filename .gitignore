@@ -1,0 +1,19 @@
+# .NET
+bin/
+obj/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+
+# Test
+TestResults/
+coverage/
+
+# App data
+*.db
+*.db-shm
+*.db-wal

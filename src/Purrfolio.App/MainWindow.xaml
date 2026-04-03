@@ -1,0 +1,36 @@
+<Window
+    x:Class="Purrfolio.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Purrfolio.App"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Purrfolio">
+
+    <Grid>
+        <NavigationView
+            x:Name="RootNavigationView"
+            IsBackButtonVisible="Collapsed"
+            IsSettingsVisible="False"
+            PaneDisplayMode="Left"
+            SelectionChanged="RootNavigationView_OnSelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem
+                    Content="资产看板"
+                    Icon="Home"
+                    Tag="home" />
+                <NavigationViewItem
+                    Content="固定收益"
+                    Icon="Library"
+                    Tag="fixed-income" />
+                <NavigationViewItem
+                    Content="财富预测"
+                    Icon="Calculator"
+                    Tag="projection" />
+            </NavigationView.MenuItems>
+
+            <Frame x:Name="RootFrame" />
+        </NavigationView>
+    </Grid>
+</Window>

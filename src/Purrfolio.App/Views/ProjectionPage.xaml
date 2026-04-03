@@ -1,0 +1,11 @@
+<Page
+    x:Class="Purrfolio.App.Views.ProjectionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Padding="24">
+        <StackPanel Spacing="8">
+            <TextBlock FontSize="28" FontWeight="SemiBold" Text="复利预测与里程碑" />
+            <TextBlock Text="预留：目标切换、指数对比、关键年龄倒计时扩展。" />
+        </StackPanel>
+    </Grid>
+</Page>

@@ -1,0 +1,14 @@
+<Application
+    x:Class="Purrfolio.App.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Purrfolio.App.Converters">
+    <Application.Resources>
+        <ResourceDictionary>
+            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <SolidColorBrush x:Key="PortfolioPositiveBrush" Color="#FF2E7D32" />
+            <SolidColorBrush x:Key="PortfolioWarningBrush" Color="#FFD84315" />
+            <SolidColorBrush x:Key="PortfolioCardBrush" Color="#19FFFFFF" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
