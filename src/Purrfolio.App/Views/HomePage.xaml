@@ -42,31 +42,63 @@
                 Message="{x:Bind ViewModel.DeviationWarningText, Mode=OneWay}" />
 
             <Border Grid.Row="3" Padding="16" CornerRadius="12" Background="{StaticResource PortfolioCardBrush}">
-                <StackPanel Spacing="12">
-                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="资产类别分布 (ItemsRepeater)" />
-                    <muxc:ItemsRepeater ItemsSource="{x:Bind ViewModel.AssetItems, Mode=OneWay}">
-                        <muxc:ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="models:AssetSummaryItem">
-                                <Grid Padding="0,10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="140" />
-                                        <ColumnDefinition Width="140" />
-                                        <ColumnDefinition Width="120" />
-                                        <ColumnDefinition Width="120" />
-                                    </Grid.ColumnDefinitions>
+                <Grid ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                                    <TextBlock Grid.Column="0" Text="{x:Bind Name}" FontWeight="SemiBold" />
-                                    <TextBlock Grid.Column="1" Text="{x:Bind CurrentValue, StringFormat='¥{0:N2}'}" />
-                                    <TextBlock Grid.Column="2" Text="{x:Bind CurrentWeight, StringFormat='{}{0:P2}'}" />
-                                    <TextBlock Grid.Column="3" Text="{x:Bind Deviation, StringFormat='{}{0:P2}'}" />
-                                </Grid>
-                            </DataTemplate>
-                        </muxc:ItemsRepeater.ItemTemplate>
-                    </muxc:ItemsRepeater>
-                </StackPanel>
+                    <StackPanel Grid.Column="0" Spacing="10">
+                        <TextBlock FontSize="18" FontWeight="SemiBold" Text="资产环形图" />
+                        <Canvas
+                            x:Name="DonutCanvas"
+                            Width="280"
+                            Height="220"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            SizeChanged="ChartCanvas_OnSizeChanged" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Spacing="8">
+                        <TextBlock FontSize="18" FontWeight="SemiBold" Text="资产类别分布" />
+                        <muxc:ItemsRepeater ItemsSource="{x:Bind ViewModel.DonutSlices, Mode=OneWay}">
+                            <muxc:ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="models:AssetDonutSlice">
+                                    <Grid Padding="0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="140" />
+                                            <ColumnDefinition Width="140" />
+                                            <ColumnDefinition Width="120" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{x:Bind Name}" FontWeight="SemiBold" />
+                                        <TextBlock Grid.Column="1" Text="{x:Bind Value, StringFormat='¥{0:N2}'}" />
+                                        <TextBlock Grid.Column="2" Text="{x:Bind Weight, StringFormat='{}{0:P2}'}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </muxc:ItemsRepeater.ItemTemplate>
+                        </muxc:ItemsRepeater>
+                    </StackPanel>
+                </Grid>
             </Border>
 
             <Border Grid.Row="4" Padding="16" CornerRadius="12" Background="{StaticResource PortfolioCardBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="净值曲线与基准对比" />
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <TextBlock Foreground="#FF4A90E2" Text="● 总资产" />
+                        <TextBlock Foreground="#FFE67E22" Text="● 沪深300（归一化）" />
+                        <TextBlock Foreground="#FF4CAF50" Text="● CPI（归一化）" />
+                    </StackPanel>
+                    <Canvas
+                        x:Name="TrendCanvas"
+                        Height="260"
+                        HorizontalAlignment="Stretch"
+                        SizeChanged="ChartCanvas_OnSizeChanged" />
+                    <TextBlock Opacity="0.75" Text="{x:Bind ViewModel.BenchmarkHintText, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="5" Padding="16" CornerRadius="12" Background="{StaticResource PortfolioCardBrush}">
                 <StackPanel Spacing="8">
                     <TextBlock FontSize="18" FontWeight="SemiBold" Text="百万目标进度" />
                     <ProgressBar Height="16" Maximum="100" Value="{x:Bind ViewModel.GoalProgressPercentage, Mode=OneWay}" />
